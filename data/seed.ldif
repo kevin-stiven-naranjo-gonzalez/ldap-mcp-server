@@ -1,0 +1,101 @@
+# Datos 100% ficticios para la demo. Fechas shadow* = días desde 1970-01-01.
+# 20727 = 2026-10-01 · 20454 = 2026-01-01 · 20089 = 2025-01-01 · 25567 = 2040-01-01
+
+dn: ou=people,dc=example,dc=org
+objectClass: organizationalUnit
+ou: people
+
+dn: ou=groups,dc=example,dc=org
+objectClass: organizationalUnit
+ou: groups
+
+dn: uid=ana.garcia,ou=people,dc=example,dc=org
+objectClass: inetOrgPerson
+objectClass: shadowAccount
+uid: ana.garcia
+cn: Ana García
+sn: García
+givenName: Ana
+mail: ana.garcia@example.org
+departmentNumber: Tecnología
+shadowLastChange: 20727
+shadowExpire: 25567
+
+dn: uid=luis.martinez,ou=people,dc=example,dc=org
+objectClass: inetOrgPerson
+objectClass: shadowAccount
+uid: luis.martinez
+cn: Luis Martínez
+sn: Martínez
+givenName: Luis
+mail: luis.martinez@example.org
+departmentNumber: Ventas
+shadowLastChange: 20454
+shadowExpire: 25567
+
+dn: uid=sofia.rojas,ou=people,dc=example,dc=org
+objectClass: inetOrgPerson
+objectClass: shadowAccount
+uid: sofia.rojas
+cn: Sofía Rojas
+sn: Rojas
+givenName: Sofía
+mail: sofia.rojas@example.org
+departmentNumber: Finanzas
+shadowLastChange: 20727
+shadowExpire: 20089
+
+dn: uid=carlos.perez,ou=people,dc=example,dc=org
+objectClass: inetOrgPerson
+objectClass: shadowAccount
+uid: carlos.perez
+cn: Carlos Pérez
+sn: Pérez
+givenName: Carlos
+mail: carlos.perez@example.org
+departmentNumber: Tecnología
+shadowLastChange: 20727
+shadowExpire: 25567
+
+dn: uid=valentina.lopez,ou=people,dc=example,dc=org
+objectClass: inetOrgPerson
+objectClass: shadowAccount
+uid: valentina.lopez
+cn: Valentina López
+sn: López
+givenName: Valentina
+mail: valentina.lopez@example.org
+departmentNumber: Operaciones
+shadowLastChange: 20089
+shadowExpire: 25567
+
+dn: uid=diego.torres,ou=people,dc=example,dc=org
+objectClass: inetOrgPerson
+objectClass: shadowAccount
+uid: diego.torres
+cn: Diego Torres
+sn: Torres
+givenName: Diego
+mail: diego.torres@example.org
+departmentNumber: Ventas
+shadowLastChange: 20727
+shadowExpire: 25567
+
+dn: cn=vpn,ou=groups,dc=example,dc=org
+objectClass: groupOfNames
+cn: vpn
+member: uid=ana.garcia,ou=people,dc=example,dc=org
+member: uid=carlos.perez,ou=people,dc=example,dc=org
+member: uid=sofia.rojas,ou=people,dc=example,dc=org
+
+dn: cn=crm-ventas,ou=groups,dc=example,dc=org
+objectClass: groupOfNames
+cn: crm-ventas
+member: uid=luis.martinez,ou=people,dc=example,dc=org
+member: uid=diego.torres,ou=people,dc=example,dc=org
+
+dn: cn=admin-sistemas,ou=groups,dc=example,dc=org
+objectClass: groupOfNames
+cn: admin-sistemas
+member: uid=ana.garcia,ou=people,dc=example,dc=org
+member: uid=valentina.lopez,ou=people,dc=example,dc=org

@@ -1,0 +1,29 @@
+[project]
+name = "ldap-mcp-server"
+version = "0.1.0"
+description = "Servidor MCP de solo lectura para consultar y auditar un directorio LDAP con agentes de IA"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "Kevin Stiven Naranjo González" }]
+keywords = ["mcp", "ldap", "iam", "ai-agents", "claude"]
+dependencies = [
+    "mcp>=2.3,<3",
+    "ldap3>=2.9",
+]
+
+[project.scripts]
+ldap-mcp-server = "ldap_mcp.server:main"
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ldap_mcp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
