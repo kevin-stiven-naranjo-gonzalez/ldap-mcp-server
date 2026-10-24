@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 from datetime import date
-from pathlib import Path
+import os
+from pathlib import Path, PurePath
 
 from mcp.server.mcpserver import MCPServer
 
@@ -31,6 +32,36 @@ def _dir() -> Directorio:
 
 def _hoy() -> date:
     return date.today()
+
+
+def _dir_csv() -> Path:
+    """Única carpeta desde la que se pueden leer CSV (LDAP_MCP_CSV_DIR, por defecto ./data)."""
+    return Path(os.environ.get("LDAP_MCP_CSV_DIR", "data")).resolve(strict=True)
+
+
+def _leer_csv_permitido(ruta_csv: str) -> str:
+    """Lee un CSV solo si está dentro de la carpeta permitida.
+
+    Evita que un agente (o un prompt inyectado) lea archivos arbitrarios del equipo
+    o rutas de red UNC. Se acepta un nombre de archivo o una ruta relativa a esa carpeta.
+    """
+    base = _dir_csv()
+    nombre = PurePath(ruta_csv)
+    if nombre.is_absolute() or nombre.drive or nombre.anchor or ".." in nombre.parts:
+        raise ValueError(f"Usa una ruta relativa dentro de la carpeta permitida ({base.name}).")
+    candidato = base / nombre
+    if candidato.is_symlink():
+        raise ValueError("No se permiten enlaces simbólicos.")
+    ruta = candidato.resolve(strict=True)
+    if not ruta.is_relative_to(base) or not ruta.is_file():
+        raise ValueError("El archivo no está en la carpeta permitida.")
+    if ruta.suffix.lower() != ".csv":
+        raise ValueError("Solo se aceptan archivos .csv.")
+    with ruta.open("rb") as f:
+        datos = f.read(MAX_CSV_BYTES + 1)
+    if len(datos) > MAX_CSV_BYTES:
+        raise ValueError("El archivo supera el tamaño máximo (2 MB).")
+    return datos.decode("utf-8-sig")
 
 
 @mcp.tool()
@@ -83,15 +114,11 @@ def cruzar_accesos(csv_texto: str = "", ruta_csv: str = "") -> dict:
 
     Args:
         csv_texto: Contenido del CSV.
-        ruta_csv: Alternativa: ruta local a un archivo .csv.
+        ruta_csv: Alternativa: nombre de un .csv dentro de la carpeta permitida
+            (LDAP_MCP_CSV_DIR, por defecto ./data), por ejemplo "accesos_ejemplo.csv".
     """
     if not csv_texto and ruta_csv:
-        ruta = Path(ruta_csv).expanduser()
-        if ruta.suffix.lower() != ".csv":
-            raise ValueError("Solo se aceptan archivos .csv.")
-        if ruta.stat().st_size > MAX_CSV_BYTES:
-            raise ValueError("El archivo supera el tamaño máximo (2 MB).")
-        csv_texto = ruta.read_text(encoding="utf-8-sig")
+        csv_texto = _leer_csv_permitido(ruta_csv)
     if not csv_texto.strip():
         raise ValueError("Envía csv_texto o ruta_csv.")
     return audit.cruzar_accesos(_dir().todos(), csv_texto, _hoy())

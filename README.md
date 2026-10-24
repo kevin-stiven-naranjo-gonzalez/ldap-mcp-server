@@ -28,6 +28,7 @@ flowchart LR
 
 - **Solo lectura:** la conexión se abre con `read_only=True`; el servidor no expone ninguna operación de escritura.
 - **Filtros LDAP escapados** para evitar inyección LDAP.
+- **Lectura de CSV acotada:** `cruzar_accesos` solo lee archivos `.csv` dentro de `LDAP_MCP_CSV_DIR` (por defecto `./data`); rechaza rutas absolutas, `..`, rutas UNC y enlaces simbólicos.
 - **Lógica separada del acceso a datos:** las reglas de auditoría se prueban sin servidor LDAP.
 
 ## Inicio rápido
@@ -61,7 +62,8 @@ Agrega esto a `claude_desktop_config.json` (ajusta la ruta):
         "LDAP_URL": "ldap://localhost:389",
         "LDAP_BIND_DN": "cn=admin,dc=example,dc=org",
         "LDAP_BIND_PASSWORD": "admin_demo_local",
-        "LDAP_BASE_DN": "dc=example,dc=org"
+        "LDAP_BASE_DN": "dc=example,dc=org",
+        "LDAP_MCP_CSV_DIR": "C:/ruta/a/ldap-mcp-server/data"
       }
     }
   }
@@ -72,7 +74,7 @@ Ejemplos de preguntas para el agente:
 
 - "¿Qué cuentas llevan más de 90 días sin cambiar la clave?"
 - "¿A qué grupos pertenece ana.garcia?"
-- "Cruza `data/accesos_ejemplo.csv` contra el directorio y dime qué accesos hay que revocar."
+- "Cruza `accesos_ejemplo.csv` contra el directorio y dime qué accesos hay que revocar."
 
 ## Estructura
 

@@ -39,14 +39,42 @@ def test_detectar_cuentas_inactivas(directorio):
     assert r["total"] == 2
 
 
-def test_cruzar_accesos_desde_archivo(directorio):
-    r = server.cruzar_accesos(ruta_csv=str(DATA / "accesos_ejemplo.csv"))
+def test_cruzar_accesos_desde_archivo(directorio, monkeypatch):
+    monkeypatch.setenv("LDAP_MCP_CSV_DIR", str(DATA))
+    r = server.cruzar_accesos(ruta_csv="accesos_ejemplo.csv")
     assert r["resumen"]["usuario_no_existe"] == 2  # pedro.ramirez y valentina.lopez (no está en el falso)
     assert r["resumen"]["inconsistencias"] == 1
 
 
-def test_cruzar_accesos_rechaza_no_csv(directorio, tmp_path):
-    f = tmp_path / "x.txt"
-    f.write_text("usuario,aplicacion,rol\n")
+def test_cruzar_accesos_rechaza_no_csv(directorio, tmp_path, monkeypatch):
+    monkeypatch.setenv("LDAP_MCP_CSV_DIR", str(tmp_path))
+    (tmp_path / "x.txt").write_text("usuario,aplicacion,rol\n")
     with pytest.raises(ValueError, match=".csv"):
-        server.cruzar_accesos(ruta_csv=str(f))
+        server.cruzar_accesos(ruta_csv="x.txt")
+
+
+@pytest.mark.parametrize(
+    "ruta",
+    [
+        "../secreto.csv",
+        "sub/../../secreto.csv",
+        "C:/Windows/secreto.csv",
+        r"\\servidor\share\a.csv",
+        "/etc/secreto.csv",
+    ],
+)
+def test_cruzar_accesos_rechaza_rutas_fuera_de_la_carpeta(directorio, tmp_path, monkeypatch, ruta):
+    base = tmp_path / "permitido"
+    base.mkdir()
+    (tmp_path / "secreto.csv").write_text("usuario,aplicacion,rol\nx,y,z\n")
+    monkeypatch.setenv("LDAP_MCP_CSV_DIR", str(base))
+    with pytest.raises(ValueError):
+        server.cruzar_accesos(ruta_csv=ruta)
+
+
+def test_cruzar_accesos_limita_tamano(directorio, tmp_path, monkeypatch):
+    monkeypatch.setenv("LDAP_MCP_CSV_DIR", str(tmp_path))
+    monkeypatch.setattr(server, "MAX_CSV_BYTES", 10)
+    (tmp_path / "grande.csv").write_text("usuario,aplicacion,rol\n" * 5)
+    with pytest.raises(ValueError, match="tamaño"):
+        server.cruzar_accesos(ruta_csv="grande.csv")
